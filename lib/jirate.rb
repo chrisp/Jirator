@@ -25,14 +25,26 @@ class Jirate
   def shake
     log_contents = vcs.log(1)
 
-    cmd = log_contents.match(/assign #{conf['jira_project']}-(\w+) (\w+)/).to_s
-    cmd = log_contents.match(/(fix|start|take) #{conf['jira_project']}-(\w+)/).to_s if (cmd.nil? || cmd.empty?)
+    ticket = log_contents.match(/#{conf['jira_project']}-(\w+) /).to_s.strip
+    assignee = log_contents.match(/assign (\w+)/).to_s.gsub('assign ', '').strip
+    action = log_contents.match(/#{conf['actions'].keys.join('|')}/).to_s.strip
+
+    begin
+      assign(ticket, assignee) unless ticket.nil? || assignee.nil? || assignee.empty?
+      send(action, ticket) unless ticket.nil? || action.nil? || action.empty?
+    rescue Exception => e
+      # A logger should capture this
+      puts e.message
+      puts e.backtrace.inspect
+    end
   end
 
   JIRA_CONF['actions'].keys.each do |action|
     module_eval(%Q{
       def #{action}(ticket, assignee=conf['jira_user'])
-        jira.progressWorkflowAction(ticket, conf['actions']['#{action}'], passthrough_attributes)
+        if jira.getAvailableActions(ticket).map(&:id).include?(conf['actions']['#{action}'])
+          jira.progressWorkflowAction(ticket, conf['actions']['#{action}'], passthrough_attributes)
+        end
       end
     })
   end
@@ -43,9 +55,9 @@ class Jirate
 
   def passthrough_attributes(assignee=nil)
     [
-     Jira4R::V2::RemoteFieldValue.new('assignee', assignee.nil? ? conf['jira_user'] : assignee),
-     Jira4R::V2::RemoteFieldValue.new('description', 'description'),
-     Jira4R::V2::RemoteFieldValue.new('priority', 'priority'),
+      Jira4R::V2::RemoteFieldValue.new('assignee', assignee.nil? ? conf['jira_user'] : assignee),
+      Jira4R::V2::RemoteFieldValue.new('description', 'description'),
+      Jira4R::V2::RemoteFieldValue.new('priority', 'priority'),
     ]
   end
 end
