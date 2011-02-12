@@ -1,0 +1,51 @@
+= Thank you for using Jirator
+
+Jirator monitors version control logs for a given project and updates a Jira instance (via the Jira soap API) when matching keywords and ticket numbers are detected.
+
+Jirator is configurable to match non-standard Jira installations.
+
+The current version is extremely minimal - matching the needs of a small set of projects.  Contributions are welcome.
+
+== Prerequisites
+
+1. Gems:  soap4r, jira4r
+2. Subversion command line client (only svn is currently supported)
+3. A local working copy of the code base you wish to monitor
+4. Ruby 1.8.7 or 1.9.2
+
+== The Specs
+
+Note that the specs are not generic and don't contain assertions.  They exist as a development aid and for documentation.  Feel free to generalize them..
+
+== Configuration
+
+Copy jirate.example.yml to jirate.yml
+Fill in login information for Jira, VCS etc
+
+== Running
+
+You can run Jirator attached to your shell via:
+bin/jirator.rb
+
+You can run as a detached daemon via:
+bin/jirator_daemon.rb start|stop
+
+== Usage
+
+Jirate scans VCS logs.  When it finds a log with a ticket number matching the project it will check for a workflow action and/or an assignment.  If a workflow action is found it will update jira with the equivalent action id.  If an assignment is found it will assign the ticket to the designated user.
+
+Here are some examples:
+
+PP-1 start_qat assign jbob - will set workflow status for ticket PP-1 (of the PP project) to "start_qat."  It will also assign the ticket to user jbob
+
+PP-1 start_uat - will set workflow status for ticket PP-1 to "start_uat"
+
+PP-1 assign jbob - will assign PP-1 to user "jbob"
+
+Note: Scanning isn't particularly robust (it pulls the most recent log every few seconds).  It may miss commits that are checked in within a few seconds of each other.
+
+== Thanks
+
+Thanks to tenderlove's "geera" command line Jira project at https://github.com/tenderlove/geera
+
+Although it didn't work for my needs (my Jira installation isn't standard), it pointed me in the right direction.

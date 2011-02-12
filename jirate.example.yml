@@ -1,0 +1,21 @@
+repository: 'svn://host/path'
+working_copy: '/Users/Shared/Sites/app'
+jira_url: 'http://jira.somewhere.com'
+jira_project: SVNIT
+jira_user: 'login'
+jira_password: 'pass'
+vcs_usr: 'login'
+vcs_password: 'pass'
+vcs_driver: 'svn'
+# comments containing keys and matching ticket number will set the ticket to the equivelant workflow id
+# these can vary by implementation - these do not match defaults
+actions:
+  start_dev: 11
+  stop_dev: 21
+  start_qat: 31
+  stop_qat: 61
+  start_uat: 71
+  stop_uat: 91
+  close: 101
+  reopen: 131
+
