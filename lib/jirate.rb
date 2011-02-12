@@ -42,8 +42,11 @@ class Jirate
   JIRA_CONF['actions'].keys.each do |action|
     module_eval(%Q{
       def #{action}(ticket, assignee=conf['jira_user'])
-        if jira.getAvailableActions(ticket).map(&:id).include?(conf['actions']['#{action}'])
+        if jira.getAvailableActions(ticket).map {|a| a.id.to_i}.include?(conf['actions']['#{action}'])
           jira.progressWorkflowAction(ticket, conf['actions']['#{action}'], passthrough_attributes)
+        else
+          # A logger should capture this
+          puts "#{action} is not available"
         end
       end
     })
