@@ -23,19 +23,23 @@ class Jirate
   end
 
   def shake
-    log_contents = vcs.log(1)
+    log_contents = vcs.log(conf['vcs_log_limit'])
 
-    ticket = log_contents.match(/#{conf['jira_project']}-(\w+) /).to_s.strip
-    assignee = log_contents.match(/assign (\w+)/).to_s.gsub('assign ', '').strip
-    action = log_contents.match(/#{conf['actions'].keys.join('|')}/).to_s.strip
+    log_contents.each do |log_contents|
+      ticket = log_contents.match(/#{conf['jira_project']}-(\w+) /).to_s.strip
+      assignee = log_contents.match(/assign (\w+)/).to_s.gsub('assign ', '').strip
+      action = log_contents.match(/#{conf['actions'].keys.join('|')}/).to_s.strip
 
-    begin
-      assign(ticket, assignee) unless ticket.nil? || assignee.nil? || assignee.empty?
-      send(action, ticket) unless ticket.nil? || action.nil? || action.empty?
-    rescue Exception => e
-      # A logger should capture this
-      puts e.message
-      puts e.backtrace.inspect
+      begin
+        assign(ticket, assignee) unless ticket.nil? || assignee.nil? || assignee.empty?
+        send(action, ticket) unless ticket.nil? || action.nil? || action.empty?
+      rescue Exception => e
+        # A logger should capture this
+        puts e.message
+        puts e.backtrace.inspect
+      end
+
+      sleep 1
     end
   end
 
@@ -43,6 +47,7 @@ class Jirate
     module_eval(%Q{
       def #{action}(ticket, assignee=conf['jira_user'])
         if jira.getAvailableActions(ticket).map {|a| a.id.to_i}.include?(conf['actions']['#{action}'])
+          puts "#{action}"
           jira.progressWorkflowAction(ticket, conf['actions']['#{action}'], passthrough_attributes)
         else
           # A logger should capture this
@@ -53,6 +58,7 @@ class Jirate
   end
 
   def assign(ticket, assignee)
+    puts "assign #{ticket}, #{assignee}"
     jira.updateIssue(ticket, [Jira4R::V2::RemoteFieldValue.new('assignee', assignee)])
   end
 

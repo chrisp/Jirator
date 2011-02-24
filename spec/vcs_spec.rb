@@ -15,7 +15,6 @@ describe Vcs do
           :working_copy => @jirate.conf["working_copy"]
         })
       end
-
       describe "log" do
         it "should return the log from #{driver}" do
           results = @vcs.log
@@ -23,12 +22,20 @@ describe Vcs do
           results.should_not be_empty
         end
       end
-
       describe "log(1)" do
         it "should return the most recent log" do
           results = @vcs.log(1)
           # TODO - add more assertions
           results.should_not be_empty
+        end
+      end
+      describe "log(10)" do
+        it "should return the 10 most recent logs in an array" do
+          results = @vcs.log(10)
+          results.class.should == Array
+          results.each do |result|
+            result.should =~ /SVNIT/
+          end
         end
       end
     end

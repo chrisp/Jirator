@@ -58,12 +58,14 @@ describe Jirate do
     describe 'assign(ticket, chrphillips)' do
       it 'should assign the ticket to the chrphillips' do
         @jirate.assign(@ticket, 'chrphillips')
+        # ASSERT
       end
     end
 
     describe 'assign(ticket, kmcclusky)' do
       it 'should assign the ticet to the kmcclusky' do
         @jirate.assign(@ticket, 'kmcclusky')
+        # ASSERT
       end
     end
   end
@@ -134,6 +136,19 @@ describe Jirate do
         @jirate.vcs.should_receive(:log).and_return("blah blah assign kmcclusky blah blah #{@ticket} start_dev blah blah")
         @jirate.should_receive(:assign).with(@ticket, 'kmcclusky').and_return(true)
         @jirate.should_receive(:start_dev).with(@ticket).and_return(true)
+        @jirate.shake
+      end
+
+      it "should iterate over multiple log entries - up to 100" do
+        log_array = []
+
+        10.times do
+          log_array << "blah blah assign kmcclusky blah blah #{@ticket} start_dev blah blah"
+        end
+
+        @jirate.vcs.should_receive(:log).and_return(log_array)
+        @jirate.should_receive(:assign).with(@ticket, 'kmcclusky').exactly(10).times.and_return(true)
+        @jirate.should_receive(:start_dev).with(@ticket).exactly(10).times.and_return(true)
         @jirate.shake
       end
     end

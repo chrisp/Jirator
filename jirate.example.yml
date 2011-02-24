@@ -7,6 +7,8 @@ jira_password: 'pass'
 vcs_usr: 'login'
 vcs_password: 'pass'
 vcs_driver: 'svn'
+# the number of log entries to iterate over each time jirator updates
+vcs_log_limit: 10
 # comments containing keys and matching ticket number will set the ticket to the equivelant workflow id
 # these can vary by implementation - these do not match defaults
 actions:

@@ -8,6 +8,10 @@ class Vcs
   end
 
   def log(limit=nil)
-    driver.log(limit)
+    logs = driver.log(limit).split('------------------------------------------------------------------------').reject do |l|
+       l == "" || l == "\n"
+    end
+
+    logs.size == 1 ? logs.first : logs
   end
 end
