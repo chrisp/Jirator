@@ -12,12 +12,39 @@ vcs_log_limit: 10
 # comments containing keys and matching ticket number will set the ticket to the equivelant workflow id
 # these can vary by implementation - these do not match defaults
 actions:
-  start_dev: 11
-  stop_dev: 21
-  start_qat: 31
-  stop_qat: 61
-  start_uat: 71
-  stop_uat: 91
-  close: 101
-  reopen: 131
-
+  start_dev:
+      id: 11
+      fallbacks:
+  stop_dev:
+      id: 21
+      fallbacks:
+  start_qat:
+      id: 31
+      fallbacks:
+          - start_dev
+  stop_qat:
+      id: 61
+      fallbacks:
+          - start_dev
+          - start_qat
+  start_uat:
+      id: 71
+      fallbacks:
+          - start_dev
+          - start_qat
+  stop_uat:
+      id: 91
+      fallbacks:
+          - start_dev
+          - start_qat
+          - start_uat
+  close:
+      id: 101
+      fallbacks:
+          - start_dev
+          - start_qat
+          - start_uat
+  reopen:
+      id: 131
+      fallbacks:
+          - stop_dev

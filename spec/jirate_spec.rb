@@ -43,16 +43,24 @@ describe Jirate do
       end
     end
 
-    xit "should not set to a workflow that is already set" do
-      obj = Object.new
-      obj.stub!(:name).and_return('start_dev')
-      obj.stub!(:id).and_return(@jirate.conf['actions']['start_dev'][1])
-
-      @jirate.jira.should_receive(:getAvailableActions).at_least(:once).and_return([obj])
+    it "should not set to a workflow that is already set" do
+      @jirate.start_dev(@ticket, false)
       @jirate.jira.should_not_receive(:progressWorkflowAction)
-      @jirate.stop_dev(@ticket)
+      @jirate.start_dev(@ticket, false)
       @jirate.jira.getAvailableActions(@ticket).map {|a| a.id.to_i}.include?(
-        @jirate.conf['actions']['start_dev']['id']).should be_true
+        @jirate.conf['actions']['start_dev']['id']).should be_false
+    end
+
+    it "should progress through fallback actions if action is not allowed" do
+      @jirate.start_uat(@ticket)
+      @jirate.jira.getAvailableActions(@ticket).map {|a| a.id.to_i}.include?(
+        @jirate.conf['actions']['start_uat']['id']).should be_false
+      @jirate.conf['actions']['start_uat']['fallbacks'].each do |fallback|
+        @jirate.jira.getAvailableActions(@ticket).map {|a| a.id.to_i}.include?(
+          @jirate.conf['actions'][fallback]['id']).should be_false
+      end
+      @jirate.stop_uat(@ticket)
+      @jirate.stop_dev(@ticket)
     end
   end
 
@@ -141,7 +149,7 @@ describe Jirate do
         @jirate.shake
       end
 
-      it "should iterate over multiple log entries - up to 100" do
+      it "should iterate over multiple log entries" do
         log_array = []
 
         10.times do

@@ -38,20 +38,32 @@ class Jirate
         puts e.message
         puts e.backtrace.inspect
       end
+    end
+  end
 
-      sleep 1
+  def perform_action_if_available(action, ticket)
+    puts action
+    if jira.getAvailableActions(ticket).map {|a| a.id.to_i}.include?(conf['actions'][action]['id'])
+      jira.progressWorkflowAction(ticket, conf['actions'][action]['id'], passthrough_attributes)
+      true
+    else
+      puts "#{action} is not available"
+      false
     end
   end
 
   JIRA_CONF['actions'].each do |action_name, action|
     module_eval(%Q{
-      def #{action_name}(ticket, assignee=conf['jira_user'])
-        if jira.getAvailableActions(ticket).map {|a| a.id.to_i}.include?(conf['actions']['#{action_name}']['id'])
-          puts "#{action_name}"
-          jira.progressWorkflowAction(ticket, conf['actions']['#{action_name}']['id'], passthrough_attributes)
-        else
-          # A logger should capture this
-          puts "#{action_name} is not available"
+      def #{action_name}(ticket, check_fallbacks=true)
+        unless perform_action_if_available('#{action_name}', ticket)
+          # try fallbacks - then try again
+          if check_fallbacks
+            conf['actions']['#{action_name}']['fallbacks'].each do |fallback|
+              send(fallback, ticket, false)
+            end unless conf['actions']['#{action_name}']['fallbacks'].nil?
+
+            perform_action_if_available('#{action_name}', ticket)
+          end
         end
       end
     })
