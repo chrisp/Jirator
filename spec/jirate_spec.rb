@@ -36,14 +36,14 @@ describe Jirate do
     ['stop_dev', 'stop_uat', 'start_uat', 'start_qat', 'start_dev'].each do |action|
       describe "#{action}(ticket)" do
         it "should #{action.gsub('_', ' ')} for the ticket" do
-          @jirate.jira.should_receive(:getAvailableActions).at_least(:once).and_return(@available_actions)
           @jirate.send(action, @ticket)
-          # ASSERTS
+          @jirate.jira.getAvailableActions(@ticket).map {|a| a.id.to_i}.include?(
+            @jirate.conf['actions'][action]['id']).should be_false
         end
       end
     end
 
-    it "should not set to a workflow that is already set" do
+    xit "should not set to a workflow that is already set" do
       obj = Object.new
       obj.stub!(:name).and_return('start_dev')
       obj.stub!(:id).and_return(@jirate.conf['actions']['start_dev'][1])
@@ -51,6 +51,8 @@ describe Jirate do
       @jirate.jira.should_receive(:getAvailableActions).at_least(:once).and_return([obj])
       @jirate.jira.should_not_receive(:progressWorkflowAction)
       @jirate.stop_dev(@ticket)
+      @jirate.jira.getAvailableActions(@ticket).map {|a| a.id.to_i}.include?(
+        @jirate.conf['actions']['start_dev']['id']).should be_true
     end
   end
 
@@ -58,14 +60,14 @@ describe Jirate do
     describe 'assign(ticket, chrphillips)' do
       it 'should assign the ticket to the chrphillips' do
         @jirate.assign(@ticket, 'chrphillips')
-        # ASSERT
+        @jirate.jira.getIssue(@ticket).assignee.should == 'chrphillips'
       end
     end
 
     describe 'assign(ticket, kmcclusky)' do
       it 'should assign the ticet to the kmcclusky' do
         @jirate.assign(@ticket, 'kmcclusky')
-        # ASSERT
+        @jirate.jira.getIssue(@ticket).assignee.should == 'kmcclusky'
       end
     end
   end
