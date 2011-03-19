@@ -69,6 +69,10 @@ class Jirate
     })
   end
 
+  def add_time(ticket, time)
+
+  end
+
   def assign(ticket, assignee)
     puts "assign #{ticket}, #{assignee}"
     jira.updateIssue(ticket, [Jira4R::V2::RemoteFieldValue.new('assignee', assignee)])

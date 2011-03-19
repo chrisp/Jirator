@@ -1,4 +1,5 @@
 
+# brave - feel free to convert to ruby svn bindings
 module VcsDriver
   class Svn
     attr_accessor :conf

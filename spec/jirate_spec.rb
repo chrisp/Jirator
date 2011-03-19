@@ -66,16 +66,24 @@ describe Jirate do
 
   context 'assigning users' do
     describe 'assign(ticket, chrphillips)' do
-      it 'should assign the ticket to the chrphillips' do
+      xit 'should assign the ticket to the chrphillips' do
         @jirate.assign(@ticket, 'chrphillips')
         @jirate.jira.getIssue(@ticket).assignee.should == 'chrphillips'
       end
     end
 
     describe 'assign(ticket, kmcclusky)' do
-      it 'should assign the ticet to the kmcclusky' do
+      xit 'should assign the ticket to the kmcclusky' do
         @jirate.assign(@ticket, 'kmcclusky')
         @jirate.jira.getIssue(@ticket).assignee.should == 'kmcclusky'
+      end
+    end
+  end
+
+  context 'time tracking' do
+    describe 'add_time(ticket, time)' do
+      it 'should add time amount of time' do
+        @jirate.add_time(@ticket, '2h')
       end
     end
   end
@@ -159,6 +167,12 @@ describe Jirate do
         @jirate.vcs.should_receive(:log).and_return(log_array)
         @jirate.should_receive(:assign).with(@ticket, 'kmcclusky').exactly(10).times.and_return(true)
         @jirate.should_receive(:start_dev).with(@ticket).exactly(10).times.and_return(true)
+        @jirate.shake
+      end
+
+      xit "should detect ticket values in lower case" do
+        @jirate.vcs.should_receive(:log).and_return("#{@ticket.downcase} start_dev")
+        @jirate.should_receive(:start_dev).with(@ticket).once.and_return(true)
         @jirate.shake
       end
     end
